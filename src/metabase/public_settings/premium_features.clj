@@ -237,12 +237,12 @@
            :status        "invalid"
            :error-details (trs "Token should be a valid 64 hexadecimal character token or an airgap token.")})))
 
-(def ^{:arglists '([token])} fetch-token-status
-  "Locked version of `fetch-token-status` allowing one request at a time."
-  (let [lock (Object.)]
-    (fn [token]
-      (locking lock
-        (fetch-token-status* token)))))
+(let [lock (Object.)]
+  (defn fetch-token-status
+    "Locked version of `fetch-token-status` allowing one request at a time."
+    [token]
+    (locking lock
+      (fetch-token-status* token))))
 
 (declare token-valid-now?)
 
@@ -423,6 +423,10 @@
 (define-premium-feature ^{:added "0.41.0"} enable-cache-granular-controls?
   "Should we enable granular controls for cache TTL at the database, dashboard, and card level?"
   :cache-granular-controls)
+
+(define-premium-feature ^{:added "1.53.0"} enable-preemptive-caching?
+  "Should we enable preemptive caching; i.e., auto-refresh of cached results?"
+  :cache-preemptive)
 
 (define-premium-feature ^{:added "0.41.0"} enable-config-text-file?
   "Should we enable initialization on launch from a config file?"

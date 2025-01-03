@@ -6,7 +6,6 @@
    [java-time.api :as t]
    [metabase.driver.common.parameters :as params]
    [metabase.driver.mongo.parameters :as mongo.params]
-   [metabase.models :refer [NativeQuerySnippet]]
    [metabase.query-processor :as qp]
    [metabase.test :as mt]
    [metabase.util.json :as json]
@@ -38,9 +37,9 @@
   ([field-name base-type value-type value]
    (field-filter field-name base-type value-type value nil))
   ([field-name base-type value-type value options]
-   (params/->FieldFilter (merge {:lib/type  :metadata/column
-                                 :name      (name field-name)
-                                 :base-type (or base-type :type/*)})
+   (params/->FieldFilter {:lib/type  :metadata/column
+                          :name      (name field-name)
+                          :base-type (or base-type :type/*)}
                          (cond-> {:type value-type, :value value}
                            (map? options) (assoc :options options)))))
 
@@ -417,8 +416,8 @@
 
 (deftest e2e-snippet-test
   (mt/test-driver :mongo
-    (t2.with-temp/with-temp [NativeQuerySnippet snippet {:name    "first 3 checkins"
-                                                         :content (to-bson {:_id {:$in [1 2 3]}})}]
+    (t2.with-temp/with-temp [:model/NativeQuerySnippet snippet {:name    "first 3 checkins"
+                                                                :content (to-bson {:_id {:$in [1 2 3]}})}]
       (is (= [[1 "African"]
               [2 "American"]
               [3 "Artisan"]]

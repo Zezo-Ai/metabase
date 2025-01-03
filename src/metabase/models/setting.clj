@@ -127,8 +127,7 @@
   This is a delay so that the settings for a user are loaded only if and when they are actually needed during a given
   API request.
 
-  This is normally bound automatically by session middleware, in
-  [[metabase.server.middleware.session/do-with-current-user]]."
+  This is normally bound automatically by session middleware, in [[metabase.server.middleware.session]]."
   (delay (atom nil)))
 
 (def ^:private retired-setting-names
@@ -147,11 +146,6 @@
   false)
 
 (declare admin-writable-site-wide-settings get-value-of-type set-value-of-type!)
-
-(def Setting
-  "Used to be the toucan1 model name defined using [[toucan.models/defmodel]], now it's a reference to the toucan2 model name.
-  We'll keep this till we replace all the symbols in our codebase."
-  :model/Setting)
 
 (methodical/defmethod t2/table-name :model/Setting [_model] :setting)
 
@@ -515,7 +509,7 @@
     (get setting-definition-or-name)))
 
 (defn- db-value [setting-definition-or-name]
-  (t2/select-one-fn :value Setting :key (setting-name setting-definition-or-name)))
+  (t2/select-one-fn :value :model/Setting :key (setting-name setting-definition-or-name)))
 
 (defn- db-is-set-up? []
   ;; this should never be hit. it is just overly cautious against a NPE here. But no way this cannot resolve
@@ -724,12 +718,12 @@
   (assert (not= setting-name setting.cache/settings-last-updated-key)
           (tru "You cannot update `settings-last-updated` yourself! This is done automatically."))
   ;; Toucan 2 version of `update!` will do transforms and stuff like that
-  (t2/update! Setting :key setting-name {:value new-value}))
+  (t2/update! :model/Setting :key setting-name {:value new-value}))
 
 (defn- set-new-setting!
   "Insert a new row for a Setting. Used internally by [[set-value-of-type!]] for `:string` below; do not use directly."
   [setting-name new-value]
-  (try (first (t2/insert-returning-instances! Setting
+  (try (first (t2/insert-returning-instances! :model/Setting
                                               :key   setting-name
                                               :value new-value))
        ;; if for some reason inserting the new value fails it almost certainly means the cache is out of date
@@ -796,7 +790,7 @@
             ;; write to DB
             (cond
               (nil? new-value)
-              (t2/delete! (t2/table-name Setting) :key setting-name)
+              (t2/delete! (t2/table-name :model/Setting) :key setting-name)
 
               ;; if there's a value in the cache then the row already exists in the DB; update that
               (contains? (setting.cache/cache) setting-name)
@@ -1031,7 +1025,12 @@
       ;; eastwood complains about (setting-name @registered-settings) for shadowing the function `setting-name`
       (when-let [registered-setting (core/get @registered-settings setting-name)]
         (when (not= setting-ns (:namespace registered-setting))
-          (throw (ex-info (tru "Setting {0} already registered in {1}" setting-name (:namespace registered-setting))
+          ;; not i18n'ed because this is supposed to be developer-facing only.
+          (throw (ex-info (format "Setting %s already registered in %s. You can remove the old definition with (swap! %s dissoc %s)"
+                                  setting-name
+                                  (:namespace registered-setting)
+                                  `registered-settings
+                                  (keyword setting-name))
                           {:existing-setting (dissoc registered-setting :on-change :getter :setter)}))))
       (when-let [same-munge (first (filter (comp #{munged-name} :munged-name)
                                            (vals @registered-settings)))]
