@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import type { InputSettingType } from "./actions";
+import type { UserId } from "./user";
 
 export interface FormattingSettings {
   "type/Temporal"?: DateFormattingSettings;
@@ -82,7 +83,15 @@ export interface ScheduleSettings {
   schedule_minute?: number | null;
 }
 
-export type ScheduleType = "hourly" | "daily" | "weekly" | "monthly";
+export type ScheduleType =
+  | "every_n_minutes"
+  | "hourly"
+  | "daily"
+  | "weekly"
+  | "monthly"
+  // 'cron' type implies usage of more complex expressions represented
+  // by raw cron string.
+  | "cron";
 
 export type ScheduleDayType =
   | "sun"
@@ -362,9 +371,16 @@ interface PublicSettings {
   engines: Record<string, Engine>;
   "google-auth-client-id": string | null;
   "google-auth-enabled": boolean;
+  gsheets: {
+    status: "not-connected" | "loading" | "complete" | "error";
+    folder_url: string | null;
+    error?: string;
+    "created-by-id"?: UserId;
+  };
   "has-user-setup": boolean;
   "help-link": HelpLinkSetting;
   "help-link-custom-destination": string;
+  "humanization-strategy": "simple" | "none";
   "hide-embed-branding?": boolean;
   "is-hosted?": boolean;
   "ldap-configured?": boolean;
@@ -384,6 +400,7 @@ interface PublicSettings {
   "setup-token": string | null;
   "show-metabase-links": boolean;
   "show-metabot": boolean;
+  "show-google-sheets-integration": boolean;
   "site-locale": string;
   "site-url": string;
   "snowplow-enabled": boolean;

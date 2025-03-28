@@ -107,7 +107,7 @@ export async function runQuestionQuery(
     ];
   }
 
-  const getDatasetQueryResult = datasetQuery => {
+  const getDatasetQueryResult = (datasetQuery) => {
     const datasetQueryWithParameters = { ...datasetQuery, parameters };
     return maybeUsePivotEndpoint(
       MetabaseApi.dataset,
@@ -132,7 +132,7 @@ export const CardApi = {
   list: GET("/api/card", (cards, { data }) =>
     // HACK: support for the "q" query param until backend implements it
     cards.filter(
-      card =>
+      (card) =>
         !data.q || card.name.toLowerCase().indexOf(data.q.toLowerCase()) >= 0,
     ),
   ),
@@ -412,7 +412,6 @@ export const PersistedModelsApi = {
 
 export const SetupApi = {
   create: POST("/api/setup"),
-  admin_checklist: GET("/api/setup/admin_checklist"),
   user_defaults: GET("/api/setup/user_defaults"),
 };
 

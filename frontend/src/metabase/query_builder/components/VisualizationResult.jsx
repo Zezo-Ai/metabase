@@ -38,7 +38,7 @@ export default class VisualizationResult extends Component {
     this.setState({ showCreateAlertModal: false });
   };
 
-  getObjectDetailData = series => {
+  getObjectDetailData = (series) => {
     return [
       {
         ...series[0],
@@ -103,7 +103,6 @@ export default class VisualizationResult extends Component {
           />
           {showCreateAlertModal && (
             <CreateOrEditQuestionAlertModal
-              opened
               onClose={this.onCloseCreateAlertModal}
               onAlertCreated={this.onCloseCreateAlertModal}
             />
